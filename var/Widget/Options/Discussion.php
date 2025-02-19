@@ -23,6 +23,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Discussion extends Options implements ActionInterface
 {
+    use EditTrait;
+
     /**
      * 执行更新动作
      *
@@ -52,7 +54,7 @@ class Discussion extends Options implements ActionInterface
             'commentsPostTimeout',
             'commentsPostInterval',
             'commentsRequireModeration',
-            'commentsRequireURL',
+            'commentsRequireUrl',
             'commentsHTMLTagAllowed',
             'commentsStopWords',
             'commentsIpBlackList'
@@ -84,7 +86,7 @@ class Discussion extends Options implements ActionInterface
         );
         $settings['commentsWhitelist'] = $this->isEnableByCheckbox($settings['commentsPost'], 'commentsWhitelist');
         $settings['commentsRequireMail'] = $this->isEnableByCheckbox($settings['commentsPost'], 'commentsRequireMail');
-        $settings['commentsRequireURL'] = $this->isEnableByCheckbox($settings['commentsPost'], 'commentsRequireURL');
+        $settings['commentsRequireUrl'] = $this->isEnableByCheckbox($settings['commentsPost'], 'commentsRequireUrl');
         $settings['commentsCheckReferer'] = $this->isEnableByCheckbox(
             $settings['commentsPost'],
             'commentsCheckReferer'
@@ -127,7 +129,7 @@ class Discussion extends Options implements ActionInterface
             $this->options->commentDateFormat,
             _t('评论日期格式'),
             _t('这是一个默认的格式,当你在模板中调用显示评论日期方法时, 如果没有指定日期格式, 将按照此格式输出.') . '<br />'
-            . _t('具体写法请参考 <a href="http://www.php.net/manual/zh/function.date.php">PHP 日期格式写法</a>.')
+            . _t('具体写法请参考 <a href="https://www.php.net/manual/zh/function.date.php">PHP 日期格式写法</a>.')
         );
         $commentDateFormat->input->setAttribute('class', 'w-40 mono');
         $form->addInput($commentDateFormat);
@@ -147,8 +149,8 @@ class Discussion extends Options implements ActionInterface
             'commentsShowCommentOnly' => _t('仅显示评论, 不显示 Pingback 和 Trackback'),
             'commentsMarkdown'        => _t('在评论中使用 Markdown 语法'),
             'commentsShowUrl'         => _t('评论者名称显示时自动加上其个人主页链接'),
-            'commentsUrlNofollow'     => _t('对评论者个人主页链接使用 <a href="http://en.wikipedia.org/wiki/Nofollow">nofollow 属性</a>'),
-            'commentsAvatar'          => _t('启用 <a href="http://gravatar.com">Gravatar</a> 头像服务, 最高显示评级为 %s 的头像',
+            'commentsUrlNofollow'     => _t('对评论者个人主页链接使用 <a href="https://en.wikipedia.org/wiki/Nofollow">nofollow 属性</a>'),
+            'commentsAvatar'          => _t('启用 <a href="https://gravatar.com">Gravatar</a> 头像服务, 最高显示评级为 %s 的头像',
                 '</label><select id="commentsShow-commentsAvatarRating" name="commentsAvatarRating">
             <option value="G"' . ('G' == $this->options->commentsAvatarRating ? ' selected="true"' : '') . '>' . _t('G - 普通') . '</option>
             <option value="PG"' . ('PG' == $this->options->commentsAvatarRating ? ' selected="true"' : '') . '>' . _t('PG - 13岁以上') . '</option>
@@ -212,7 +214,7 @@ class Discussion extends Options implements ActionInterface
             'commentsRequireModeration'  => _t('所有评论必须经过审核'),
             'commentsWhitelist'          => _t('评论者之前须有评论通过了审核'),
             'commentsRequireMail'        => _t('必须填写邮箱'),
-            'commentsRequireURL'         => _t('必须填写网址'),
+            'commentsRequireUrl'         => _t('必须填写网址'),
             'commentsCheckReferer'       => _t('检查评论来源页 URL 是否与文章链接一致'),
             'commentsAntiSpam'           => _t('开启反垃圾保护'),
             'commentsAutoClose'          => _t('在文章发布 %s 天以后自动关闭评论',
@@ -236,8 +238,8 @@ class Discussion extends Options implements ActionInterface
             $commentsPostOptionsValue[] = 'commentsRequireMail';
         }
 
-        if ($this->options->commentsRequireURL) {
-            $commentsPostOptionsValue[] = 'commentsRequireURL';
+        if ($this->options->commentsRequireUrl) {
+            $commentsPostOptionsValue[] = 'commentsRequireUrl';
         }
 
         if ($this->options->commentsCheckReferer) {

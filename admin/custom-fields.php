@@ -9,8 +9,8 @@ $defaultFields = isset($post) ? $post->getDefaultFieldItems() : $page->getDefaul
                 class="i-caret-right"></i> <?php _e('自定义字段'); ?></a></label>
     <table class="typecho-list-table mono">
         <colgroup>
-            <col width="25%"/>
-            <col width="10%"/>
+            <col width="20%"/>
+            <col width="15%"/>
             <col width="55%"/>
             <col width="10%"/>
         </colgroup>
@@ -26,7 +26,7 @@ $defaultFields = isset($post) ? $post->getDefaultFieldItems() : $page->getDefaul
                 <td>
                     <label for="fieldname" class="sr-only"><?php _e('字段名称'); ?></label>
                     <input type="text" name="fieldNames[]" value="<?php echo htmlspecialchars($field['name']); ?>"
-                           id="fieldname" class="text-s w-100">
+                           id="fieldname" pattern="^[_a-zA-Z][_a-zA-Z0-9]*$" oninput="this.reportValidity()" class="text-s w-100">
                 </td>
                 <td>
                     <label for="fieldtype" class="sr-only"><?php _e('字段类型'); ?></label>
@@ -37,12 +37,14 @@ $defaultFields = isset($post) ? $post->getDefaultFieldItems() : $page->getDefaul
                             value="int"<?php if ('int' == $field['type']): ?> selected<?php endif; ?>><?php _e('整数'); ?></option>
                         <option
                             value="float"<?php if ('float' == $field['type']): ?> selected<?php endif; ?>><?php _e('小数'); ?></option>
+                        <option
+                            value="json"<?php if ('json' == $field['type']): ?> selected<?php endif; ?>><?php _e('JSON 结构'); ?></option>
                     </select>
                 </td>
                 <td>
                     <label for="fieldvalue" class="sr-only"><?php _e('字段值'); ?></label>
                     <textarea name="fieldValues[]" id="fieldvalue" class="text-s w-100"
-                              rows="2"><?php echo htmlspecialchars($field[$field['type'] . '_value']); ?></textarea>
+                              rows="2"><?php echo htmlspecialchars($field[($field['type'] == 'json' ? 'str' : $field['type']) . '_value']); ?></textarea>
                 </td>
                 <td>
                     <button type="button" class="btn btn-xs"><?php _e('删除'); ?></button>
@@ -54,7 +56,7 @@ $defaultFields = isset($post) ? $post->getDefaultFieldItems() : $page->getDefaul
                 <td>
                     <label for="fieldname" class="sr-only"><?php _e('字段名称'); ?></label>
                     <input type="text" name="fieldNames[]" placeholder="<?php _e('字段名称'); ?>" id="fieldname"
-                           class="text-s w-100">
+                           class="text-s w-100" pattern="^[_a-zA-Z][_a-zA-Z0-9]*$" oninput="this.reportValidity()">
                 </td>
                 <td>
                     <label for="fieldtype" class="sr-only"><?php _e('字段类型'); ?></label>
@@ -77,6 +79,6 @@ $defaultFields = isset($post) ? $post->getDefaultFieldItems() : $page->getDefaul
     </table>
     <div class="description clearfix">
         <button type="button" class="btn btn-xs operate-add"><?php _e('+添加字段'); ?></button>
-        <?php _e('自定义字段可以扩展你的模板功能, 使用方法参见 <a href="http://docs.typecho.org/help/custom-fields">帮助文档</a>'); ?>
+        <?php _e('自定义字段可以扩展你的模板功能, 使用方法参见 <a href="https://docs.typecho.org/help/custom-fields">帮助文档</a>'); ?>
     </div>
 </section>

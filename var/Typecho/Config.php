@@ -10,7 +10,7 @@ namespace Typecho;
  * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
  * @license GNU General Public License 2.0
  */
-class Config implements \Iterator, \ArrayAccess
+class Config extends \stdClass implements \Iterator, \ArrayAccess
 {
     /**
      * 当前配置
@@ -18,7 +18,7 @@ class Config implements \Iterator, \ArrayAccess
      * @access private
      * @var array
      */
-    private $currentConfig = [];
+    private array $currentConfig = [];
 
     /**
      * 实例化一个当前配置
@@ -91,7 +91,7 @@ class Config implements \Iterator, \ArrayAccess
      * @access public
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->currentConfig);
     }
@@ -102,6 +102,7 @@ class Config implements \Iterator, \ArrayAccess
      * @access public
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->currentConfig);
@@ -113,7 +114,7 @@ class Config implements \Iterator, \ArrayAccess
      * @access public
      * @return void
      */
-    public function next()
+    public function next(): void
     {
         next($this->currentConfig);
     }
@@ -124,6 +125,7 @@ class Config implements \Iterator, \ArrayAccess
      * @access public
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->currentConfig);
@@ -198,7 +200,7 @@ class Config implements \Iterator, \ArrayAccess
      */
     public function __toString(): string
     {
-        return serialize($this->currentConfig);
+        return json_encode($this->currentConfig);
     }
 
     /**
@@ -222,6 +224,7 @@ class Config implements \Iterator, \ArrayAccess
      * @param mixed $offset
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->currentConfig[$offset] ?? null;
@@ -231,7 +234,7 @@ class Config implements \Iterator, \ArrayAccess
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->currentConfig[$offset] = $value;
     }
@@ -239,7 +242,7 @@ class Config implements \Iterator, \ArrayAccess
     /**
      * @param mixed $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->currentConfig[$offset]);
     }

@@ -15,7 +15,7 @@ class Validate
      * @access private
      * @var array
      */
-    private $data;
+    private array $data;
 
     /**
      * 当前验证指针
@@ -23,7 +23,7 @@ class Validate
      * @access private
      * @var string
      */
-    private $key;
+    private string $key;
 
     /**
      * 验证规则数组
@@ -31,7 +31,7 @@ class Validate
      * @access private
      * @var array
      */
-    private $rules = [];
+    private array $rules = [];
 
     /**
      * 中断模式,一旦出现验证错误即抛出而不再继续执行
@@ -39,7 +39,7 @@ class Validate
      * @access private
      * @var boolean
      */
-    private $break = false;
+    private bool $break = false;
 
     /**
      * 最小长度
@@ -96,7 +96,8 @@ class Validate
      */
     public static function email(string $str): bool
     {
-        return filter_var($str, FILTER_VALIDATE_EMAIL) !== false;
+        $email = filter_var($str, FILTER_SANITIZE_EMAIL);
+        return !!filter_var($str, FILTER_VALIDATE_EMAIL) && ($email === $str);
     }
 
     /**
@@ -110,10 +111,8 @@ class Validate
      */
     public static function url(string $str): bool
     {
-        return filter_var(
-            $str,
-            FILTER_VALIDATE_URL
-        ) !== false;
+        $url = Common::safeUrl($str);
+        return !!filter_var($str, FILTER_VALIDATE_URL) && ($url === $str);
     }
 
     /**
@@ -121,7 +120,7 @@ class Validate
      *
      * @access public
      *
-     * @param string
+     * @param string $str
      *
      * @return boolean
      */
@@ -135,7 +134,7 @@ class Validate
      *
      * @access public
      *
-     * @param string
+     * @param string $str
      *
      * @return boolean
      */
@@ -149,7 +148,7 @@ class Validate
      *
      * @access public
      *
-     * @param string
+     * @param string $str
      *
      * @return boolean
      */
@@ -221,7 +220,7 @@ class Validate
      * @access public
      *
      * @param string $key 数值键值
-     * @param string|array $rule 规则名称
+     * @param string|callable $rule 规则名称
      * @param string $message 错误字符串
      *
      * @return $this
@@ -271,12 +270,12 @@ class Validate
         foreach ($rules as $key => $rule) {
             $this->key = $key;
             $data[$key] = (is_array($data[$key]) ? 0 == count($data[$key])
-                : 0 == strlen($data[$key])) ? null : $data[$key];
+                : 0 == strlen($data[$key] ?? '')) ? null : $data[$key];
 
             foreach ($rule as $params) {
                 $method = $params[0];
 
-                if ('required' != $method && 'confirm' != $method && 0 == strlen($data[$key])) {
+                if ('required' != $method && 'confirm' != $method && 0 == strlen($data[$key] ?? '')) {
                     continue;
                 }
 
@@ -284,7 +283,7 @@ class Validate
                 $params[1] = $data[$key];
                 $params = array_slice($params, 1);
 
-                if (!call_user_func_array(is_array($method) ? $method : [$this, $method], $params)) {
+                if (!call_user_func_array(is_callable($method) ? $method : [$this, $method], $params)) {
                     $result[$key] = $message;
                     break;
                 }
@@ -319,11 +318,9 @@ class Validate
      *
      * @access public
      *
-     * @param string|null $str 待处理的字符串
-     *
      * @return boolean
      */
-    public function required(?string $str): bool
+    public function required(): bool
     {
         return !empty($this->data[$this->key]);
     }

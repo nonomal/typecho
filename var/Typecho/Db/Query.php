@@ -21,7 +21,7 @@ use Typecho\Db;
 class Query
 {
     /** 数据库关键字 */
-    private const KEYWORDS = '*PRIMARY|AND|OR|LIKE|BINARY|BY|DISTINCT|AS|IN|IS|NULL';
+    private const KEYWORDS = '*PRIMARY|AND|OR|LIKE|ILIKE|BINARY|BY|DISTINCT|AS|IN|IS|NULL';
 
     /**
      * 默认字段
@@ -29,7 +29,7 @@ class Query
      * @var array
      * @access private
      */
-    private static $default = [
+    private static array $default = [
         'action' => null,
         'table'  => null,
         'fields' => '*',
@@ -48,14 +48,14 @@ class Query
      *
      * @var Adapter
      */
-    private $adapter;
+    private Adapter $adapter;
 
     /**
      * 查询语句预结构,由数组构成,方便组合为SQL查询字符串
      *
      * @var array
      */
-    private $sqlPreBuild;
+    private array $sqlPreBuild;
 
     /**
      * 前缀
@@ -63,12 +63,12 @@ class Query
      * @access private
      * @var string
      */
-    private $prefix;
+    private string $prefix;
 
     /**
      * @var array
      */
-    private $params = [];
+    private array $params = [];
 
     /**
      * 构造函数,引用数据库适配器作为内部数据
@@ -211,7 +211,6 @@ class Query
                 $split .= $cha;
                 $lastIsAlnum = false;
             }
-
         }
 
         return $result;
@@ -512,7 +511,7 @@ class Query
 
         return preg_replace_callback("/#param:([0-9]+)#/", function ($matches) use ($params, $adapter) {
             if (array_key_exists($matches[1], $params)) {
-                return $adapter->quoteValue($params[$matches[1]]);
+                return is_null($params[$matches[1]]) ? 'NULL' : $adapter->quoteValue($params[$matches[1]]);
             } else {
                 return $matches[0];
             }

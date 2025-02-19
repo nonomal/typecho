@@ -45,7 +45,7 @@ class Rows extends Widget
                     }
 
                     $screen = array_filter(glob($theme . '/*'), function ($path) {
-                        return preg_match("/screenshot\.(jpg|png|gif|bmp|jpeg)$/i", $path);
+                        return preg_match("/screenshot\.(jpg|png|gif|bmp|jpeg|webp|avif)$/i", $path);
                     });
 
                     if ($screen) {
@@ -77,10 +77,9 @@ class Rows extends Widget
      * get theme
      *
      * @param string $theme
-     * @param mixed $index
      * @return string
      */
-    protected function getTheme(string $theme, $index): string
+    protected function getTheme(string $theme): string
     {
         return basename($theme);
     }

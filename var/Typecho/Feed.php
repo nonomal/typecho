@@ -33,7 +33,7 @@ class Feed
      * @access private
      * @var string
      */
-    private $type;
+    private string $type;
 
     /**
      * 字符集编码
@@ -41,7 +41,7 @@ class Feed
      * @access private
      * @var string
      */
-    private $charset;
+    private string $charset;
 
     /**
      * 语言状态
@@ -49,7 +49,7 @@ class Feed
      * @access private
      * @var string
      */
-    private $lang;
+    private string $lang;
 
     /**
      * 聚合地址
@@ -57,7 +57,7 @@ class Feed
      * @access private
      * @var string
      */
-    private $feedUrl;
+    private string $feedUrl;
 
     /**
      * 基本地址
@@ -65,7 +65,7 @@ class Feed
      * @access private
      * @var string
      */
-    private $baseUrl;
+    private string $baseUrl;
 
     /**
      * 聚合标题
@@ -73,15 +73,15 @@ class Feed
      * @access private
      * @var string
      */
-    private $title;
+    private string $title;
 
     /**
      * 聚合副标题
      *
      * @access private
-     * @var string
+     * @var string|null
      */
-    private $subTitle;
+    private ?string $subTitle;
 
     /**
      * 版本信息
@@ -89,7 +89,7 @@ class Feed
      * @access private
      * @var string
      */
-    private $version;
+    private string $version;
 
     /**
      * 所有的items
@@ -97,7 +97,7 @@ class Feed
      * @access private
      * @var array
      */
-    private $items = [];
+    private array $items = [];
 
     /**
      * 创建Feed对象
@@ -113,6 +113,14 @@ class Feed
         $this->type = $type;
         $this->charset = $charset;
         $this->lang = $lang;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
     }
 
     /**
@@ -143,6 +151,14 @@ class Feed
     public function setFeedUrl(string $feedUrl)
     {
         $this->feedUrl = $feedUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFeedUrl(): string
+    {
+        return $this->feedUrl;
     }
 
     /**
@@ -218,7 +234,7 @@ xmlns:dc="http://purl.org/dc/elements/1.1/">' . self::EOL;
             $result .= '<channel rdf:about="' . $this->feedUrl . '">
 <title>' . htmlspecialchars($this->title) . '</title>
 <link>' . $this->baseUrl . '</link>
-<description>' . htmlspecialchars($this->subTitle) . '</description>
+<description>' . htmlspecialchars($this->subTitle ?? '') . '</description>
 <items>
 <rdf:Seq>' . self::EOL;
 
@@ -294,7 +310,7 @@ xmlns:wfw="http://wellformedweb.org/CommentAPI/">
 <link>' . $this->baseUrl . '</link>
 <atom:link href="' . $this->feedUrl . '" rel="self" type="application/rss+xml" />
 <language>' . $this->lang . '</language>
-<description>' . htmlspecialchars($this->subTitle) . '</description>
+<description>' . htmlspecialchars($this->subTitle ?? '') . '</description>
 <lastBuildDate>' . $this->dateFormat($lastUpdate) . '</lastBuildDate>
 <pubDate>' . $this->dateFormat($lastUpdate) . '</pubDate>' . self::EOL;
 
@@ -364,9 +380,9 @@ xml:base="' . $this->baseUrl . '"
             }
 
             $result .= '<title type="text">' . htmlspecialchars($this->title) . '</title>
-<subtitle type="text">' . htmlspecialchars($this->subTitle) . '</subtitle>
+<subtitle type="text">' . htmlspecialchars($this->subTitle ?? '') . '</subtitle>
 <updated>' . $this->dateFormat($lastUpdate) . '</updated>
-<generator uri="http://typecho.org/" version="' . $this->version . '">Typecho</generator>
+<generator uri="https://typecho.org/" version="' . $this->version . '">Typecho</generator>
 <link rel="alternate" type="text/html" href="' . $this->baseUrl . '" />
 <id>' . $this->feedUrl . '</id>
 <link rel="self" type="application/atom+xml" href="' . $this->feedUrl . '" />

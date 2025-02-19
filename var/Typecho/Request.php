@@ -15,7 +15,7 @@ class Request
      * @access private
      * @var Request
      */
-    private static $instance;
+    private static Request $instance;
 
     /**
      * 沙箱参数
@@ -23,7 +23,7 @@ class Request
      * @access private
      * @var Config|null
      */
-    private $sandbox;
+    private ?Config $sandbox;
 
     /**
      * 用户参数
@@ -31,54 +31,54 @@ class Request
      * @access private
      * @var Config|null
      */
-    private $params;
+    private ?Config $params;
 
     /**
      * 路径信息
      *
      * @access private
-     * @var string
+     * @var string|null
      */
-    private $pathInfo = null;
+    private ?string $pathInfo = null;
 
     /**
      * requestUri
      *
-     * @var string
+     * @var string|null
      * @access private
      */
-    private $requestUri = null;
+    private ?string $requestUri = null;
 
     /**
      * requestRoot
      *
-     * @var mixed
+     * @var string|null
      * @access private
      */
-    private $requestRoot = null;
+    private ?string $requestRoot = null;
 
     /**
      * 获取baseurl
      *
-     * @var string
+     * @var string|null
      * @access private
      */
-    private $baseUrl = null;
+    private ?string $baseUrl = null;
 
     /**
      * 客户端ip地址
      *
      * @access private
-     * @var string
+     * @var string|null
      */
-    private $ip = null;
+    private ?string $ip = null;
 
     /**
      * 域名前缀
      *
-     * @var string
+     * @var string|null
      */
-    private $urlPrefix = null;
+    private ?string $urlPrefix = null;
 
     /**
      * 获取单例句柄
@@ -126,6 +126,18 @@ class Request
     }
 
     /**
+     * @return $this
+     */
+    public function endProxy(): Request
+    {
+        if (isset($this->params)) {
+            $this->params = null;
+        }
+
+        return $this;
+    }
+
+    /**
      * 获取实际传递参数
      *
      * @param string $key 指定参数
@@ -135,7 +147,6 @@ class Request
      */
     public function get(string $key, $default = null, ?bool &$exists = true)
     {
-        $exists = true;
         $value = null;
 
         switch (true) {
@@ -145,8 +156,16 @@ class Request
             case isset($this->sandbox):
                 if (isset($this->sandbox[$key])) {
                     $value = $this->sandbox[$key];
-                } else {
-                    $exists = false;
+                }
+                break;
+            case $key === '@json':
+                if ($this->isJson()) {
+                    $body = file_get_contents('php://input');
+
+                    if (false !== $body) {
+                        $value = json_decode($body, true, 16);
+                        $default = $default ?? $value;
+                    }
                 }
                 break;
             case isset($_GET[$key]):
@@ -156,18 +175,18 @@ class Request
                 $value = $_POST[$key];
                 break;
             default:
-                $exists = false;
                 break;
         }
 
-        // reset params
-        if (isset($this->params)) {
-            $this->params = null;
-        }
-
-        if (isset($value)) {
-            return is_array($default) == is_array($value) ? $value : $default;
+        if (isset($value) && $value !== '') {
+            $exists = true;
+            if (is_array($default) == is_array($value)) {
+                return $value;
+            } else {
+                return $default;
+            }
         } else {
+            $exists = false;
             return $default;
         }
     }
@@ -175,6 +194,7 @@ class Request
     /**
      * 获取实际传递参数(magic)
      *
+     * @deprecated ^1.3.0
      * @param string $key 指定参数
      * @return mixed
      */
@@ -186,6 +206,7 @@ class Request
     /**
      * 判断参数是否存在
      *
+     * @deprecated ^1.3.0
      * @param string $key 指定参数
      * @return boolean
      */
@@ -305,7 +326,7 @@ class Request
             return $this->pathInfo;
         }
 
-        //参考Zend Framework对pahtinfo的处理, 更好的兼容性
+        //参考Zend Framework对pathinfo的处理, 更好的兼容性
         $pathInfo = null;
 
         //处理requestUri
@@ -340,13 +361,23 @@ class Request
     }
 
     /**
+     * 获取请求的内容类型
+     *
+     * @return string|null
+     */
+    public function getContentType(): ?string
+    {
+        return $this->getHeader('Content-Type');
+    }
+
+    /**
      * 获取环境变量
      *
      * @param string $name 获取环境变量名
      * @param string|null $default
      * @return string|null
      */
-    public function getServer(string $name, string $default = null): ?string
+    public function getServer(string $name, ?string $default = null): ?string
     {
         return $_SERVER[$name] ?? $default;
     }
@@ -386,8 +417,14 @@ class Request
      */
     public function getHeader(string $key, ?string $default = null): ?string
     {
-        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
-        return $this->getServer($key, $default);
+        $key = strtoupper(str_replace('-', '_', $key));
+        
+        // Content-Type 和 Content-Length 这两个 header 还需要从不带 HTTP_ 的 key 尝试获取
+        if (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
+            $default = $this->getServer($key, $default);
+        }
+
+        return $this->getServer('HTTP_' . $key, $default);
     }
 
     /**
@@ -418,6 +455,7 @@ class Request
     public function isSecure(): bool
     {
         return (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && !strcasecmp('https', $_SERVER['HTTP_X_FORWARDED_PROTO']))
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && !strcasecmp('quic', $_SERVER['HTTP_X_FORWARDED_PROTO']))
             || (!empty($_SERVER['HTTP_X_FORWARDED_PORT']) && 443 == $_SERVER['HTTP_X_FORWARDED_PORT'])
             || (!empty($_SERVER['HTTPS']) && 'off' != strtolower($_SERVER['HTTPS']))
             || (!empty($_SERVER['SERVER_PORT']) && 443 == $_SERVER['SERVER_PORT'])
@@ -470,6 +508,19 @@ class Request
     public function isAjax(): bool
     {
         return 'XMLHttpRequest' == $this->getHeader('X-Requested-With');
+    }
+
+    /**
+     * 判断是否为Json请求
+     *
+     * @return bool
+     */
+    public function isJson(): bool
+    {
+        return !!preg_match(
+            "/^\s*application\/json(;|$)/i",
+            $this->getContentType() ?? ''
+        );
     }
 
     /**

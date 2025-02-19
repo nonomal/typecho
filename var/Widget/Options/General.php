@@ -24,6 +24,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class General extends Options implements ActionInterface
 {
+    use EditTrait;
+
     /**
      * 检查是否在语言列表中
      *
@@ -96,7 +98,7 @@ class General extends Options implements ActionInterface
         $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
 
         if (!defined('__TYPECHO_SITE_URL__')) {
-            $settings['siteUrl'] = rtrim($this->request->siteUrl, '/');
+            $settings['siteUrl'] = rtrim($this->request->get('siteUrl'), '/');
         }
 
         $attachmentTypes = [];
@@ -112,7 +114,7 @@ class General extends Options implements ActionInterface
             $attachmentTypes[] = '@doc@';
         }
 
-        $attachmentTypesOther = $this->request->filter('trim', 'strtolower')->attachmentTypesOther;
+        $attachmentTypesOther = $this->request->filter('trim', 'strtolower')->get('attachmentTypesOther');
         if ($this->isEnableByCheckbox($settings['attachmentTypes'], '@other@') && !empty($attachmentTypesOther)) {
             $types = implode(
                 ',',
@@ -151,7 +153,7 @@ class General extends Options implements ActionInterface
 
         /** 站点地址 */
         if (!defined('__TYPECHO_SITE_URL__')) {
-            $siteUrl = new Form\Element\Text(
+            $siteUrl = new Form\Element\Url(
                 'siteUrl',
                 null,
                 $this->options->originalSiteUrl,
@@ -272,7 +274,7 @@ class General extends Options implements ActionInterface
         }
 
         $attachmentTypesOptions = [
-            '@image@' => _t('图片文件') . ' <code>(gif jpg jpeg png tiff bmp)</code>',
+            '@image@' => _t('图片文件') . ' <code>(gif jpg jpeg png tiff bmp webp avif)</code>',
             '@media@' => _t('多媒体文件') . ' <code>(mp3 mp4 mov wmv wma rmvb rm avi flv ogg oga ogv)</code>',
             '@doc@'   => _t('常用档案文件') . ' <code>(txt doc docx xls xlsx ppt pptx zip rar pdf)</code>',
             '@other@' => _t(
